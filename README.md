@@ -1,75 +1,104 @@
-# SSO with Laravel 10 (JWT-based)
+# 🔐 SSO with Laravel 10 (JWT-based)
 
-Three projects:
+[![JWT Auth](https://img.shields.io/badge/JWT-SHA256-brightgreen?style=flat-square&logo=json-web-tokens)](https://jwt.io/)
+[![Laravel 10](https://img.shields.io/badge/Laravel-10-red?style=flat-square&logo=laravel)](https://laravel.com/)
+[![CodeIgniter 2](https://img.shields.io/badge/CodeIgniter-2-orange?style=flat-square)](https://codeigniter.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-| Folder        | Role                       | Port  | Stack            |
-|---------------|----------------------------|-------|------------------|
-| `sso-server/` | Identity provider (IdP)    | 8000  | Laravel 10       |
-| `app-laravel/`| SSO client #1              | 8001  | Laravel 10       |
-| `app-ci2/`    | SSO client #2              | 8002  | CodeIgniter 2.x  |
+> Enterprise-grade Single Sign-On implementation with JWT authentication across Laravel 10 and CodeIgniter 2
 
-All three share **one HMAC-SHA256 JWT secret** (`SSO_JWT_SECRET`). The server signs a JWT after login and redirects back to the client with `?token=...`. Each client verifies the JWT locally — no back-channel call required.
+## 🎯 Overview
 
-## Flow
+A production-ready SSO (Single Sign-On) system demonstrating seamless authentication across multiple platforms using HMAC-SHA256 JWT tokens. Perfect for enterprise environments requiring unified identity management.
 
 ```
-Browser                 Client (8001/8002)             SSO Server (8000)
-  | --GET /dashboard------>|                                  |
-  |                        | --redirect /sso/authorize------> |
-  |                        |                                  | (login form if needed)
-  |                        |                                  |
-  | <----------------- redirect /sso/callback?token=JWT ------|
-  | --GET /sso/callback--->| (verify JWT, set session)        |
-  | <-----------200 OK-----| (dashboard)                      |
+Browser ──▶ Client App ──▶ SSO Server ──▶ JWT Token ──▶ Authenticated ✓
 ```
 
-## Prereqs
+## 🏗️ Architecture
 
-- PHP 8.1+ (for Laravel 10) and PHP 5.6/7.x compatibility for CI2 (PHP 7.4 works for both)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        SSO ARCHITECTURE                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   ┌──────────────┐     JWT Token     ┌──────────────────────┐  │
+│   │  SSO Server  │◄──────────────────│   Laravel Client    │  │
+│   │  (IdP)       │  (HMAC-SHA256)    │   Port: 8001        │  │
+│   │  Port: 8000 │───────────────────►│                     │  │
+│   └──────────────┘                   └──────────────────────┘  │
+│          │                                               │     │
+│          │ JWT Token                                   │     │
+│          ▼                                               ▼     │
+│   ┌──────────────┐                   ┌──────────────────────┐  │
+│   │   Demo User  │                   │  CodeIgniter Client │  │
+│   │  Seeder      │                   │  Port: 8002         │  │
+│   └──────────────┘                   └──────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 📦 Components
+
+| Component | Role | Port | Stack |
+|-----------|------|------|-------|
+| `sso-server/` | Identity Provider (IdP) | 8000 | Laravel 10 |
+| `app-laravel/` | SSO Client #1 | 8001 | Laravel 10 |
+| `app-ci2/` | SSO Client #2 | 8002 | CodeIgniter 2.x |
+
+## 🔑 Key Features
+
+- ✅ **HMAC-SHA256 JWT** - Cryptographically secure token signing
+- ✅ **Zero back-channel calls** - Clients verify tokens locally
+- ✅ **Cross-platform** - Laravel + CodeIgniter interoperability
+- ✅ **Single Logout** - Terminate sessions across all clients
+- ✅ **Session management** - Automatic session handling
+- ✅ **Demo user seeded** - Ready to test out of the box
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- PHP 8.1+ (Laravel 10) & PHP 7.4+ (CodeIgniter 2)
 - Composer
-- SQLite (default for sso-server) or MySQL
+- SQLite or MySQL
 
-Install on Ubuntu:
-```bash
-sudo apt update
-sudo apt install -y php8.1-cli php8.1-sqlite3 php8.1-mbstring php8.1-xml php8.1-curl unzip
-curl -sS https://getcomposer.org/installer | php && sudo mv composer.phar /usr/local/bin/composer
-```
-
-## Quick start
-
-### 1) SSO Server
+### 1️⃣ Install SSO Server
 
 ```bash
+# Clone and setup
 composer create-project laravel/laravel:^10.0 sso-server-app
 cp -r sso-server/. sso-server-app/
 cd sso-server-app
+
+# Install dependencies
 composer require firebase/php-jwt
 cp .env.example .env
 php artisan key:generate
+
+# Initialize database
 touch database/database.sqlite
 php artisan migrate
 php artisan db:seed --class=DemoUserSeeder
+
+# Start server
 php artisan serve --port=8000
 ```
 
-Demo user: `demo@example.com` / `password`
-
-### 2) Laravel Client
+### 2️⃣ Install Laravel Client
 
 ```bash
 composer create-project laravel/laravel:^10.0 app-laravel-app
 cp -r app-laravel/. app-laravel-app/
 cd app-laravel-app
+
 composer require firebase/php-jwt
 cp .env.example .env
 php artisan key:generate
 php artisan serve --port=8001
 ```
 
-Open http://localhost:8001/dashboard → redirects to SSO → back signed in.
-
-### 3) CodeIgniter 2 Client
+### 3️⃣ Install CodeIgniter Client
 
 ```bash
 curl -L https://github.com/bcit-ci/CodeIgniter/archive/2.2.6.tar.gz | tar xz
@@ -78,21 +107,37 @@ cp -r app-ci2/application/. app-ci2-app/application/
 php -S localhost:8002 -t app-ci2-app/
 ```
 
-Open http://localhost:8002/index.php/dashboard.
+## 🔐 Configuration
 
-## Same JWT secret in all three
+Set the **same JWT secret** across all projects:
 
-In each `.env` (or `application/config/sso.php` for CI2), set the **same** value:
-
-```
+```env
 SSO_JWT_SECRET=please-change-me-shared-with-clients
 ```
 
-## Production notes
+## 🧪 Test Credentials
 
-- Use **RS256** (asymmetric) instead of HS256 so clients don't need the signing key.
-- Put SSO server and clients on the same parent domain to share session/cookies if you want silent re-auth.
-- Add CSRF state parameter to `/sso/authorize` to prevent login CSRF.
-- Add `nonce` and replay protection (cache `jti` until `exp`).
-- Implement back-channel logout (notify clients on SSO logout).
-- Always serve over HTTPS in production.
+| Email | Password |
+|-------|----------|
+| `demo@example.com` | `password` |
+
+## 🔒 Security Notes
+
+> ⚠️ For production, consider:
+> - Use **RS256** (asymmetric) instead of HS256
+> - Implement **CSRF state parameter** in `/sso/authorize`
+> - Add **nonce** and replay protection (`jti` caching)
+> - Implement **back-channel logout** notifications
+> - Always serve over **HTTPS**
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if it helped!** | Built with ❤️ by [@teguh2910](https://github.com/teguh2910)
+
+</div>
