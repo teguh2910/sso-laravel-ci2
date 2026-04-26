@@ -1,5 +1,7 @@
 services:
   sso-server:
+    depends_on:
+      - redis
     build:
       context: ./docker/laravel
     container_name: sso-server
@@ -42,3 +44,9 @@ services:
     command: ["bash", "/usr/local/bin/entrypoint-ci2.sh"]
     depends_on:
       - sso-server
+
+  redis:
+    image: redis:alpine
+    container_name: sso-redis
+    ports:
+      - "6379:6379"
