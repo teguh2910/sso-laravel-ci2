@@ -1,0 +1,44 @@
+services:
+  sso-server:
+    build:
+      context: ./docker/laravel
+    container_name: sso-server
+    working_dir: /var/www/html
+    volumes:
+      - ./sso-server-app:/var/www/html
+      - ./sso-server:/scaffold:ro
+    ports:
+      - "8000:8000"
+    command: ["bash", "/usr/local/bin/entrypoint-server.sh"]
+    environment:
+      APP_ROLE: server
+
+  app-laravel:
+    build:
+      context: ./docker/laravel
+    container_name: app-laravel
+    working_dir: /var/www/html
+    volumes:
+      - ./app-laravel-app:/var/www/html
+      - ./app-laravel:/scaffold:ro
+    ports:
+      - "8001:8001"
+    command: ["bash", "/usr/local/bin/entrypoint-client.sh"]
+    depends_on:
+      - sso-server
+    environment:
+      APP_ROLE: client
+
+  app-ci2:
+    build:
+      context: ./docker/ci2
+    container_name: app-ci2
+    working_dir: /var/www/html
+    volumes:
+      - ./app-ci2-app:/var/www/html
+      - ./app-ci2:/scaffold:ro
+    ports:
+      - "8002:8002"
+    command: ["bash", "/usr/local/bin/entrypoint-ci2.sh"]
+    depends_on:
+      - sso-server

@@ -1,0 +1,59 @@
+# ---- Generated runtime app folders (built by Docker entrypoints) ----
+/sso-server-app/
+/app-laravel-app/
+/app-ci2-app/
+
+# ---- Environment files ----
+.env
+.env.*
+!.env.example
+
+# ---- PHP / Composer ----
+vendor/
+composer.lock
+
+# ---- Laravel ----
+/sso-server/storage/*.key
+/sso-server/storage/logs/*
+/sso-server/storage/framework/cache/*
+/sso-server/storage/framework/sessions/*
+/sso-server/storage/framework/views/*
+/sso-server/bootstrap/cache/*
+/app-laravel/storage/*.key
+/app-laravel/storage/logs/*
+/app-laravel/storage/framework/cache/*
+/app-laravel/storage/framework/sessions/*
+/app-laravel/storage/framework/views/*
+/app-laravel/bootstrap/cache/*
+
+# ---- CodeIgniter 2 caches/logs ----
+/app-ci2/application/cache/*
+/app-ci2/application/logs/*
+!*/cache/.gitkeep
+!*/logs/.gitkeep
+!*/logs/index.html
+!*/cache/index.html
+
+# ---- Node / front-end ----
+node_modules/
+npm-debug.log*
+yarn-error.log
+.pnpm-debug.log*
+
+# ---- SQLite databases ----
+*.sqlite
+*.sqlite-journal
+
+# ---- Editors / IDE ----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ---- OS / misc ----
+.windsurf/
+*.log
+.cache/
